@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>El Torreón — Registro y Cría</title>
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="stage">
+    <div class="deviceChrome">
+      <div class="statusBar">
+        <div class="statusLeft">
+          <span class="statusTime">9:41</span>
+        </div>
+        <div class="statusRight">
+          <span class="statusSignal">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="statusWifi"></span>
+          <span class="statusBattery">
+            <span class="batteryLevel"></span>
+          </span>
+        </div>
+      </div>
+
+      <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+      <div class="brand">
+        <div class="brandIcon">🕊️</div>
+        <div class="brandText">
+          <div class="brandTitle">El Torreón</div>
+          <div class="brandSub">Registro y cría</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="navItem active" data-view="dashboard">📊 Dashboard</button>
+        <button class="navItem" data-view="aves">🗂️ Aves</button>
+        <button class="navItem" data-view="parentesco">🧬 Parentesco</button>
+        <button class="navItem" data-view="plumajes">🎨 Plumajes</button>
+        <button class="navItem" data-view="procedencias">📍 Procedencias</button>
+      </nav>
+
+      <div class="sidebarFooter">
+        <div class="hint">Maqueta HTML/JS/CSS (Apple style)</div>
+      </div>
+    </aside>
+        <!-- Main -->
+        <main class="main">
+          <!-- Topbar -->
+          <header class="topbar">
+            <div class="topbarLeft">
+              <div class="pageTitle" id="pageTitle">Dashboard</div>
+              <div class="pageSubtitle" id="pageSubtitle">Resumen rápido del palomar</div>
+            </div>
+            <div class="topbarRight">
+              <button class="btn ghost" id="btnSeed">Cargar ejemplo</button>
+              <button class="btn" id="btnNewAve">+ Nueva ave</button>
+            </div>
+          </header>
+
+          <!-- Content -->
+          <section class="content">
+
+        <!-- DASHBOARD -->
+        <div class="view" id="view-dashboard">
+          <div class="grid2">
+            <div class="card">
+              <div class="cardHeader">
+                <div class="cardTitle">Machos / Hembras</div>
+                <div class="pill">canvas</div>
+              </div>
+              <div class="cardBody">
+                <canvas id="sexChart" width="800" height="260"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="cardHeader">
+                <div class="cardTitle">Plumajes</div>
+                <div class="pill">canvas</div>
+              </div>
+              <div class="cardBody">
+                <canvas id="plumajeChart" width="800" height="260"></canvas>
+              </div>
+            </div>
+
+            <div class="card wide">
+              <div class="cardHeader">
+                <div class="cardTitle">Últimas aves</div>
+                <div class="pill">lista</div>
+              </div>
+              <div class="cardBody">
+                <div class="list" id="latestAves"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AVES -->
+        <div class="view hidden" id="view-aves">
+          <div class="toolbar">
+            <div class="search">
+              <input id="searchAve" type="search" placeholder="Buscar por nombre, anilla, plumaje..." />
+            </div>
+            <div class="toolbarRight">
+              <button class="btn ghost" id="btnClearFilters">Limpiar</button>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="card">
+              <div class="cardHeader">
+                <div class="cardTitle">Listado</div>
+                <div class="pill" id="countAves">0</div>
+              </div>
+              <div class="cardBody">
+                <div class="table" id="avesTable"></div>
+              </div>
+            </div>
+
+            <div class="card" id="aveDetailCard">
+              <div class="cardHeader">
+                <div class="cardTitle">Ficha</div>
+                <div class="pill" id="aveDetailPill">—</div>
+              </div>
+              <div class="cardBody">
+                <div class="emptyState" id="emptyDetail">
+                  Selecciona un ave para ver su ficha.
+                </div>
+
+                <div class="detail hidden" id="aveDetail">
+                  <div class="detailTop">
+                    <div class="avatar" id="aveAvatar">🕊️</div>
+                    <div class="detailMeta">
+                      <div class="h2" id="dNombre">—</div>
+                      <div class="muted" id="dAnilla">—</div>
+                      <div class="chips" id="dChips"></div>
+                    </div>
+                    <div class="detailActions">
+                      <button class="btn ghost" id="btnEditAve">Editar</button>
+                      <button class="btn ghost" id="btnGoParentesco">Ver parentesco</button>
+                      <button class="btn danger" id="btnDeleteAve">Eliminar</button>
+                    </div>
+                  </div>
+
+                  <div class="kvGrid" id="dKv"></div>
+
+                  <div class="miniNote">
+                    *Edad calculada desde Fecha_nacimiento. Padre/Madre apuntan a otras aves por ID.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PARENTESCO -->
+        <div class="view hidden" id="view-parentesco">
+          <div class="toolbar">
+            <div class="row">
+              <label class="label">Ave</label>
+              <select id="selParAve"></select>
+            </div>
+            <div class="row">
+              <label class="label">Nivel</label>
+              <input id="rngLevel" type="range" min="1" max="4" value="2" />
+              <div class="pill" id="lblLevel">Nivel 2</div>
+            </div>
+            <div class="toolbarRight">
+              <button class="btn ghost" id="btnFit">Ajustar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardHeader">
+              <div class="cardTitle">Mapa de parentescos</div>
+              <div class="pill">SVG</div>
+            </div>
+            <div class="cardBody">
+              <div class="svgWrap" id="svgWrap">
+                <svg id="kinSvg" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg"></svg>
+              </div>
+              <div class="miniNote">
+                Nivel 1: padres · Nivel 2: abuelos · Nivel 3: bisabuelos · Nivel 4: tatarabuelos (si existen en datos).
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLUMAJES -->
+        <div class="view hidden" id="view-plumajes">
+          <div class="card">
+            <div class="cardHeader">
+              <div class="cardTitle">Plumajes</div>
+              <div class="pill">catálogo</div>
+            </div>
+            <div class="cardBody">
+              <div class="list" id="plumajesList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROCEDENCIAS -->
+        <div class="view hidden" id="view-procedencias">
+          <div class="card">
+            <div class="cardHeader">
+              <div class="cardTitle">Procedencias</div>
+              <div class="pill">catálogo</div>
+            </div>
+            <div class="cardBody">
+              <div class="list" id="procedenciasList"></div>
+            </div>
+          </div>
+        </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Ave (maqueta) -->
+  <div class="modalOverlay hidden" id="modalOverlay">
+    <div class="modal">
+      <div class="modalHeader">
+        <div class="cardTitle" id="modalTitle">Nueva ave</div>
+        <button class="iconBtn" id="btnCloseModal">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="formGrid">
+          <label>Nombre<input id="fNombre" /></label>
+          <label>Sexo
+            <select id="fSexo">
+              <option value="M">Macho</option>
+              <option value="H">Hembra</option>
+            </select>
+          </label>
+          <label>Fecha_nacimiento<input id="fFecha" type="date" /></label>
+          <label>Número anilla<input id="fAnilla" /></label>
+
+          <label>Padre
+            <select id="fPadre"></select>
+          </label>
+          <label>Madre
+            <select id="fMadre"></select>
+          </label>
+
+          <label>Procedencia
+            <select id="fProcedencia"></select>
+          </label>
+          <label>Plumaje
+            <select id="fPlumaje"></select>
+          </label>
+
+          <label>Imagen (URL)<input id="fImagen" placeholder="https://..." /></label>
+          <label>Volado
+            <select id="fVolado">
+              <option value="false">No</option>
+              <option value="true">Sí</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn ghost" id="btnCancel">Cancelar</button>
+        <button class="btn" id="btnSaveAve">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
