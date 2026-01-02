@@ -1,7 +1,7 @@
 /* =========================
    Datos (maqueta)
    Estructura solicitada:
-   ave(aves): Nombre, Sexo, Fecha_nacimiento, Padre, Madre, Edad, Procedencia, Imagen, Plumaje, Numero anilla, Volado
+   ave(aves): Nombre, Sexo, Fecha_nacimiento, Padre, Madre, Edad, Procedencia, Imagen, Plumaje, Numero anilla, Categoría vuelo
    plumajes: Nombre, descripcion
    procedencias: Nombre, descripcion
 ========================= */
@@ -21,6 +21,17 @@ let procedencias = [
   { id: "pr3", nombre: "Compra", descripcion: "Adquirido por compra." },
 ];
 
+function defaultVolados(){
+  return [
+    { id: "vo0", nombre: "Sin volar", descripcion: "Aún no ha sido volado." },
+    { id: "vo1", nombre: "1 vuelo", descripcion: "Sesión inicial de vuelo." },
+    { id: "vo3", nombre: "3 vuelos", descripcion: "Entrenamiento intermedio." },
+    { id: "vo5", nombre: "Competidor", descripcion: "Ritmo completo / competición." },
+  ];
+}
+
+let volados = defaultVolados();
+
 let aves = [
   // Generación 0 (ejemplo)
   {
@@ -34,7 +45,7 @@ let aves = [
     imagen: "",
     plumajeId: "pl1",
     numeroAnilla: "ES-2023-001",
-    volado: true,
+    voladoId: "vo3",
   },
   {
     id: "a2",
@@ -47,7 +58,7 @@ let aves = [
     imagen: "",
     plumajeId: "pl4",
     numeroAnilla: "ES-2023-014",
-    volado: false,
+    voladoId: "vo0",
   },
 
   // Padres de a1
@@ -62,7 +73,7 @@ let aves = [
     imagen: "",
     plumajeId: "pl2",
     numeroAnilla: "ES-2021-090",
-    volado: true,
+    voladoId: "vo5",
   },
   {
     id: "a4",
@@ -75,7 +86,7 @@ let aves = [
     imagen: "",
     plumajeId: "pl1",
     numeroAnilla: "ES-2021-112",
-    volado: true,
+    voladoId: "vo3",
   },
 
   // Padres de a2
@@ -90,7 +101,7 @@ let aves = [
     imagen: "",
     plumajeId: "pl3",
     numeroAnilla: "ES-2020-044",
-    volado: true,
+    voladoId: "vo3",
   },
   {
     id: "a6",
@@ -103,14 +114,14 @@ let aves = [
     imagen: "",
     plumajeId: "pl4",
     numeroAnilla: "ES-2020-051",
-    volado: false,
+    voladoId: "vo0",
   },
 
   // Abuelos de a1 (para nivel 2)
-  { id: "a7", nombre: "Sultán", sexo: "M", fechaNacimiento: "2019-01-10", padreId: null, madreId: null, procedenciaId:"pr1", imagen:"", plumajeId:"pl2", numeroAnilla:"ES-2019-010", volado:true },
-  { id: "a8", nombre: "Brisa",  sexo: "H", fechaNacimiento: "2019-02-08", padreId: null, madreId: null, procedenciaId:"pr1", imagen:"", plumajeId:"pl1", numeroAnilla:"ES-2019-022", volado:true },
-  { id: "a9", nombre: "Rayo",   sexo: "M", fechaNacimiento: "2019-04-14", padreId: null, madreId: null, procedenciaId:"pr3", imagen:"", plumajeId:"pl3", numeroAnilla:"ES-2019-033", volado:true },
-  { id: "a10",nombre: "Lila",   sexo: "H", fechaNacimiento: "2019-06-30", padreId: null, madreId: null, procedenciaId:"pr3", imagen:"", plumajeId:"pl4", numeroAnilla:"ES-2019-040", volado:false },
+  { id: "a7", nombre: "Sultán", sexo: "M", fechaNacimiento: "2019-01-10", padreId: null, madreId: null, procedenciaId:"pr1", imagen:"", plumajeId:"pl2", numeroAnilla:"ES-2019-010", voladoId:"vo5" },
+  { id: "a8", nombre: "Brisa",  sexo: "H", fechaNacimiento: "2019-02-08", padreId: null, madreId: null, procedenciaId:"pr1", imagen:"", plumajeId:"pl1", numeroAnilla:"ES-2019-022", voladoId:"vo3" },
+  { id: "a9", nombre: "Rayo",   sexo: "M", fechaNacimiento: "2019-04-14", padreId: null, madreId: null, procedenciaId:"pr3", imagen:"", plumajeId:"pl3", numeroAnilla:"ES-2019-033", voladoId:"vo3" },
+  { id: "a10",nombre: "Lila",   sexo: "H", fechaNacimiento: "2019-06-30", padreId: null, madreId: null, procedenciaId:"pr3", imagen:"", plumajeId:"pl4", numeroAnilla:"ES-2019-040", voladoId:"vo0" },
 ];
 
 /* =========================
@@ -135,6 +146,10 @@ function findProc(id){
   return procedencias.find(p => p.id === id) || null;
 }
 
+function findVolado(id){
+  return volados.find(v => v.id === id) || null;
+}
+
 function formatDate(iso){
   if(!iso) return "—";
   const d = new Date(iso);
@@ -152,13 +167,12 @@ function calcEdadYears(iso){
 }
 
 function sexLabel(s){ return s === "M" ? "Macho" : "Hembra"; }
-function boolLabel(b){ return b ? "Sí" : "No"; }
 
 /* =========================
    Persistencia opcional
 ========================= */
 function save(){
-  const payload = { aves, plumajes, procedencias };
+  const payload = { aves, plumajes, procedencias, volados };
   localStorage.setItem(storeKey, JSON.stringify(payload));
 }
 function load(){
@@ -170,6 +184,23 @@ function load(){
       aves = parsed.aves;
       plumajes = parsed.plumajes;
       procedencias = parsed.procedencias;
+      volados = parsed.volados ?? defaultVolados();
+      let migrated = false;
+      aves.forEach(a=>{
+        if(!a.voladoId){
+          const fallback = volados[0]?.id || null;
+          if(typeof a.volado === "boolean"){
+            a.voladoId = a.volado ? (volados[2]?.id || fallback) : fallback;
+          }else{
+            a.voladoId = fallback;
+          }
+          if("volado" in a) delete a.volado;
+          migrated = true;
+        }
+      });
+      if(migrated || !parsed.volados){
+        save();
+      }
       return true;
     }
   }catch(_){}
@@ -189,6 +220,7 @@ const views = {
   aves: $("#view-aves"),
   parentesco: $("#view-parentesco"),
   plumajes: $("#view-plumajes"),
+  volados: $("#view-volados"),
   procedencias: $("#view-procedencias"),
 };
 
@@ -197,6 +229,7 @@ const titles = {
   aves: ["Aves", "Registro de palomos y fichas"],
   parentesco: ["Parentesco", "Árbol genealógico por niveles (mapa mental)"],
   plumajes: ["Plumajes", "Catálogo de plumajes"],
+  volados: ["Vuelo", "Categorías de vuelo / registros"],
   procedencias: ["Procedencias", "Catálogo de procedencias"],
 };
 
@@ -223,11 +256,12 @@ function renderLatest(){
   for(const a of recent){
     const pl = findPlumaje(a.plumajeId)?.nombre ?? "—";
     const pr = findProc(a.procedenciaId)?.nombre ?? "—";
+    const vo = findVolado(a.voladoId)?.nombre ?? "—";
     const item = document.createElement("div");
     item.className = "listItem";
     item.innerHTML = `
       <div class="listItemTitle">${a.nombre} <span class="badge">${sexLabel(a.sexo)}</span></div>
-      <div class="listItemSub">Anilla: ${a.numeroAnilla || "—"} · Plumaje: ${pl} · Procedencia: ${pr}</div>
+      <div class="listItemSub">Anilla: ${a.numeroAnilla || "—"} · Plumaje: ${pl} · Procedencia: ${pr} · Vuelo: ${vo}</div>
     `;
     el.appendChild(item);
   }
@@ -307,6 +341,9 @@ function renderStats(){
 ========================= */
 let selectedAveId = null;
 let editingAveId = null;
+let editingProcedenciaId = null;
+let editingPlumajeId = null;
+let editingVoladoId = null;
 
 function renderAvesTable(filter=""){
   const el = $("#avesTable");
@@ -315,7 +352,8 @@ function renderAvesTable(filter=""){
 
   const rows = aves.filter(a=>{
     const pl = findPlumaje(a.plumajeId)?.nombre ?? "";
-    const text = `${a.nombre} ${a.numeroAnilla||""} ${pl}`.toLowerCase();
+    const vo = findVolado(a.voladoId)?.nombre ?? "";
+    const text = `${a.nombre} ${a.numeroAnilla||""} ${pl} ${vo}`.toLowerCase();
     return !f || text.includes(f);
   });
 
@@ -323,12 +361,13 @@ function renderAvesTable(filter=""){
 
   for(const a of rows){
     const pl = findPlumaje(a.plumajeId)?.nombre ?? "—";
+    const vo = findVolado(a.voladoId)?.nombre ?? "—";
     const item = document.createElement("div");
     item.className = "rowItem";
     item.innerHTML = `
       <div class="rowLeft">
         <div class="rowTitle">${a.nombre}</div>
-        <div class="rowSub">Anilla ${a.numeroAnilla || "—"} · ${pl}</div>
+        <div class="rowSub">Anilla ${a.numeroAnilla || "—"} · ${pl} · Vuelo ${vo}</div>
       </div>
       <div class="badge">${sexLabel(a.sexo)}</div>
     `;
@@ -355,12 +394,22 @@ function selectAve(id){
 
   $("#dNombre").textContent = a.nombre;
   $("#dAnilla").textContent = `Anilla: ${a.numeroAnilla || "—"} · Nacimiento: ${formatDate(a.fechaNacimiento)}`;
-  $("#aveAvatar").textContent = a.sexo === "M" ? "🕊️" : "🐦";
+  const avatar = $("#aveAvatar");
+  if(a.imagen){
+    avatar.style.backgroundImage = `url('${a.imagen}')`;
+    avatar.textContent = "";
+    avatar.classList.add("hasImage");
+  }else{
+    avatar.style.backgroundImage = "none";
+    avatar.textContent = a.sexo === "M" ? "🕊️" : "🐦";
+    avatar.classList.remove("hasImage");
+  }
 
   const pl = findPlumaje(a.plumajeId)?.nombre ?? "—";
   const pr = findProc(a.procedenciaId)?.nombre ?? "—";
   const padre = findAve(a.padreId)?.nombre ?? "—";
   const madre = findAve(a.madreId)?.nombre ?? "—";
+  const vuelo = findVolado(a.voladoId)?.nombre ?? "—";
 
   const chips = $("#dChips");
   chips.innerHTML = "";
@@ -368,7 +417,7 @@ function selectAve(id){
     `Sexo: ${sexLabel(a.sexo)}`,
     `Plumaje: ${pl}`,
     `Procedencia: ${pr}`,
-    `Volado: ${boolLabel(a.volado)}`
+    `Vuelo: ${vuelo}`
   ].forEach(t=>{
     const c = document.createElement("div");
     c.className="chip";
@@ -388,7 +437,7 @@ function selectAve(id){
     ["Madre", madre],
     ["Procedencia", pr],
     ["Plumaje", pl],
-    ["Volado", boolLabel(a.volado)],
+    ["Categoría de vuelo", vuelo],
   ];
 
   for(const [k,v] of fields){
@@ -397,6 +446,105 @@ function selectAve(id){
     box.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
     kv.appendChild(box);
   }
+}
+
+function refreshSelectedAve(){
+  if(selectedAveId){
+    selectAve(selectedAveId);
+  }
+}
+
+function updateImagePreview(src){
+  const preview = $("#imagePreview");
+  if(!preview) return;
+  if(src){
+    preview.style.backgroundImage = `url('${src}')`;
+    preview.textContent = "";
+    preview.classList.add("visible");
+  }else{
+    preview.style.backgroundImage = "none";
+    preview.textContent = "Sin imagen";
+    preview.classList.remove("visible");
+  }
+}
+
+function loadImageFile(file){
+  if(!file) return;
+  if(!file.type || !file.type.startsWith("image/")){
+    alert("Selecciona un archivo de imagen.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const dataUrl = reader.result;
+    $("#fImagen").value = dataUrl;
+    updateImagePreview(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function backupPayload(){
+  return {
+    aves,
+    plumajes,
+    procedencias,
+    volados,
+  };
+}
+
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(backupPayload(), null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `palomar-backup-${timestamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+}
+
+function importBackupData(data){
+  if(!data || !Array.isArray(data.aves) || !Array.isArray(data.plumajes) || !Array.isArray(data.procedencias)){
+    alert("El archivo no parece ser una copia válida.");
+    return;
+  }
+  if(!confirm("Esto sustituirá los datos actuales por la copia seleccionada. ¿Continuar?")) return;
+  aves = data.aves;
+  plumajes = data.plumajes;
+  procedencias = data.procedencias;
+  volados = Array.isArray(data.volados) && data.volados.length ? data.volados : defaultVolados();
+  save();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  renderStats();
+  renderCatalogs();
+  populateKinSelectors();
+  refreshPlumajeSelects();
+  refreshProcedenciaSelects();
+  refreshVoladoSelects();
+  if(aves[0]?.id){
+    selectAve(aves[0].id);
+  }else{
+    clearDetail();
+  }
+  updateImagePreview("");
+}
+
+function handleBackupFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      importBackupData(parsed);
+    }catch(err){
+      console.error(err);
+      alert("No se pudo leer el backup.");
+    }
+  };
+  reader.readAsText(file);
 }
 
 /* =========================
@@ -545,31 +693,122 @@ function svgText(x,y,text,size,fill,weight=500){
    Plumajes / Procedencias
 ========================= */
 function renderCatalogs(){
+  const voEl = $("#voladosList");
+  if(voEl){
+    voEl.innerHTML = "";
+    volados.forEach(v=>{
+      const count = aves.filter(a=>a.voladoId===v.id).length;
+      const item = document.createElement("div");
+      item.className = "listItem";
+
+      const title = document.createElement("div");
+      title.className = "listItemTitle";
+      title.innerHTML = `${v.nombre} <span class="badge">${count} aves</span>`;
+
+      const sub = document.createElement("div");
+      sub.className = "listItemSub";
+      sub.textContent = v.descripcion || "—";
+
+      const actions = document.createElement("div");
+      actions.className = "listActions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn ghost sm";
+      editBtn.textContent = "Editar";
+      editBtn.addEventListener("click", ()=> openVoladoModal(v.id));
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn danger sm";
+      delBtn.textContent = "Eliminar";
+      delBtn.addEventListener("click", ()=> deleteVolado(v.id));
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      item.appendChild(title);
+      item.appendChild(sub);
+      item.appendChild(actions);
+      voEl.appendChild(item);
+    });
+  }
+
   const plEl = $("#plumajesList");
-  plEl.innerHTML = "";
-  plumajes.forEach(p=>{
-    const count = aves.filter(a=>a.plumajeId===p.id).length;
-    const item = document.createElement("div");
-    item.className="listItem";
-    item.innerHTML = `
-      <div class="listItemTitle">${p.nombre} <span class="badge">${count} aves</span></div>
-      <div class="listItemSub">${p.descripcion}</div>
-    `;
-    plEl.appendChild(item);
-  });
+  if(plEl){
+    plEl.innerHTML = "";
+    plumajes.forEach(p=>{
+      const count = aves.filter(a=>a.plumajeId===p.id).length;
+      const item = document.createElement("div");
+      item.className="listItem";
+
+      const title = document.createElement("div");
+      title.className = "listItemTitle";
+      title.innerHTML = `${p.nombre} <span class="badge">${count} aves</span>`;
+
+      const sub = document.createElement("div");
+      sub.className = "listItemSub";
+      sub.textContent = p.descripcion || "—";
+
+      const actions = document.createElement("div");
+      actions.className = "listActions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn ghost sm";
+      editBtn.textContent = "Editar";
+      editBtn.addEventListener("click", ()=> openPlumajeModal(p.id));
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn danger sm";
+      delBtn.textContent = "Eliminar";
+      delBtn.addEventListener("click", ()=> deletePlumaje(p.id));
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      item.appendChild(title);
+      item.appendChild(sub);
+      item.appendChild(actions);
+      plEl.appendChild(item);
+    });
+  }
 
   const prEl = $("#procedenciasList");
-  prEl.innerHTML = "";
-  procedencias.forEach(p=>{
-    const count = aves.filter(a=>a.procedenciaId===p.id).length;
-    const item = document.createElement("div");
-    item.className="listItem";
-    item.innerHTML = `
-      <div class="listItemTitle">${p.nombre} <span class="badge">${count} aves</span></div>
-      <div class="listItemSub">${p.descripcion}</div>
-    `;
-    prEl.appendChild(item);
-  });
+  if(prEl){
+    prEl.innerHTML = "";
+    procedencias.forEach(p=>{
+      const count = aves.filter(a=>a.procedenciaId===p.id).length;
+      const item = document.createElement("div");
+      item.className="listItem";
+
+      const title = document.createElement("div");
+      title.className = "listItemTitle";
+      title.innerHTML = `${p.nombre} <span class="badge">${count} aves</span>`;
+
+      const sub = document.createElement("div");
+      sub.className = "listItemSub";
+      sub.textContent = p.descripcion || "—";
+
+      const actions = document.createElement("div");
+      actions.className = "listActions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn ghost sm";
+      editBtn.textContent = "Editar";
+      editBtn.addEventListener("click", ()=> openProcedenciaModal(p.id));
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn danger sm";
+      delBtn.textContent = "Eliminar";
+      delBtn.addEventListener("click", ()=> deleteProcedencia(p.id));
+
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      item.appendChild(title);
+      item.appendChild(sub);
+      item.appendChild(actions);
+      prEl.appendChild(item);
+    });
+  }
 }
 
 /* =========================
@@ -584,6 +823,7 @@ function openModal(aveId=null){
   fillSelectAves($("#fMadre"), true, "— Sin madre —", editingAveId);
   fillSelect(plumajes, $("#fPlumaje"), "id", "nombre");
   fillSelect(procedencias, $("#fProcedencia"), "id", "nombre");
+  fillSelect(volados, $("#fVolado"), "id", "nombre");
 
   const modalTitle = $("#modalTitle");
   const saveBtn = $("#btnSaveAve");
@@ -599,11 +839,12 @@ function openModal(aveId=null){
       $("#fFecha").value = ave.fechaNacimiento || "";
       $("#fAnilla").value = ave.numeroAnilla || "";
       $("#fImagen").value = ave.imagen || "";
-      $("#fVolado").value = ave.volado ? "true" : "false";
+      $("#fVolado").value = ave.voladoId || (volados[0]?.id || "");
       $("#fPadre").value = ave.padreId || "";
       $("#fMadre").value = ave.madreId || "";
       $("#fPlumaje").value = ave.plumajeId || (plumajes[0]?.id || "");
       $("#fProcedencia").value = ave.procedenciaId || (procedencias[0]?.id || "");
+      updateImagePreview($("#fImagen").value.trim());
     }else{
       editingAveId = null;
       modalTitle.textContent = "Nueva ave";
@@ -625,11 +866,12 @@ function resetAveForm(){
   $("#fFecha").value = "";
   $("#fAnilla").value = "";
   $("#fImagen").value = "";
-  $("#fVolado").value = "false";
+  $("#fVolado").value = volados[0]?.id || "";
   $("#fPadre").value = "";
   $("#fMadre").value = "";
   $("#fPlumaje").value = plumajes[0]?.id || "";
   $("#fProcedencia").value = procedencias[0]?.id || "";
+  updateImagePreview("");
 }
 
 function fillSelect(items, select, valueKey, labelKey){
@@ -677,7 +919,7 @@ function saveAveFromForm(){
     imagen: $("#fImagen").value.trim(),
     plumajeId: $("#fPlumaje").value,
     numeroAnilla: $("#fAnilla").value.trim(),
-    volado: $("#fVolado").value === "true",
+    voladoId: $("#fVolado").value || null,
   };
 
   if(editingAveId){
@@ -737,6 +979,285 @@ function deleteSelectedAve(){
 }
 
 /* =========================
+   Plumajes CRUD
+========================= */
+function openPlumajeModal(plId=null){
+  editingPlumajeId = plId || null;
+  $("#modalPlumajeOverlay").classList.remove("hidden");
+  const title = $("#plModalTitle");
+  const saveBtn = $("#btnSavePl");
+  const isEditing = Boolean(editingPlumajeId);
+  title.textContent = isEditing ? "Editar plumaje" : "Nuevo plumaje";
+  saveBtn.textContent = isEditing ? "Guardar cambios" : "Guardar";
+
+  if(isEditing){
+    const pl = plumajes.find(p=>p.id === editingPlumajeId);
+    if(pl){
+      $("#plNombre").value = pl.nombre;
+      $("#plDescripcion").value = pl.descripcion || "";
+    }else{
+      editingPlumajeId = null;
+      resetPlumajeForm();
+    }
+  }else{
+    resetPlumajeForm();
+  }
+}
+function closePlumajeModal(){
+  editingPlumajeId = null;
+  $("#modalPlumajeOverlay").classList.add("hidden");
+}
+function resetPlumajeForm(){
+  $("#plNombre").value = "";
+  $("#plDescripcion").value = "";
+}
+function savePlumajeFromForm(){
+  const nombre = $("#plNombre").value.trim();
+  const descripcion = $("#plDescripcion").value.trim();
+  if(!nombre){
+    alert("Añade un nombre para el plumaje.");
+    return;
+  }
+
+  if(editingPlumajeId){
+    const pl = plumajes.find(p=>p.id === editingPlumajeId);
+    if(pl){
+      pl.nombre = nombre;
+      pl.descripcion = descripcion;
+    }else{
+      plumajes.push({ id: uid("pl"), nombre, descripcion });
+    }
+  }else{
+    plumajes.push({ id: uid("pl"), nombre, descripcion });
+  }
+  save();
+  closePlumajeModal();
+  renderCatalogs();
+  refreshPlumajeSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  renderStats();
+  refreshSelectedAve();
+}
+function deletePlumaje(id){
+  const pl = plumajes.find(p=>p.id === id);
+  if(!pl) return;
+  if(!confirm(`¿Eliminar plumaje "${pl.nombre}"? Las aves quedarán sin plumaje asignado.`)) return;
+  plumajes = plumajes.filter(p=>p.id !== id);
+  aves.forEach(a=>{
+    if(a.plumajeId === id) a.plumajeId = null;
+  });
+  save();
+  if(editingPlumajeId === id){
+    closePlumajeModal();
+  }
+  renderCatalogs();
+  refreshPlumajeSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  renderStats();
+  refreshSelectedAve();
+}
+function refreshPlumajeSelects(){
+  const select = $("#fPlumaje");
+  if(!select) return;
+  const current = select.value;
+  fillSelect(plumajes, select, "id", "nombre");
+  if(current && plumajes.some(p=>p.id === current)){
+    select.value = current;
+  }else if(plumajes[0]){
+    select.value = plumajes[0].id;
+  }else{
+    select.value = "";
+  }
+}
+
+/* =========================
+   Categorías de vuelo CRUD
+========================= */
+function openVoladoModal(voId=null){
+  editingVoladoId = voId || null;
+  $("#modalVoladoOverlay").classList.remove("hidden");
+  const title = $("#voModalTitle");
+  const saveBtn = $("#btnSaveVo");
+  const isEditing = Boolean(editingVoladoId);
+  title.textContent = isEditing ? "Editar categoría de vuelo" : "Nueva categoría de vuelo";
+  saveBtn.textContent = isEditing ? "Guardar cambios" : "Guardar";
+
+  if(isEditing){
+    const vo = volados.find(v=>v.id === editingVoladoId);
+    if(vo){
+      $("#voNombre").value = vo.nombre;
+      $("#voDescripcion").value = vo.descripcion || "";
+    }else{
+      editingVoladoId = null;
+      resetVoladoForm();
+    }
+  }else{
+    resetVoladoForm();
+  }
+}
+function closeVoladoModal(){
+  editingVoladoId = null;
+  $("#modalVoladoOverlay").classList.add("hidden");
+}
+function resetVoladoForm(){
+  $("#voNombre").value = "";
+  $("#voDescripcion").value = "";
+}
+function saveVoladoFromForm(){
+  const nombre = $("#voNombre").value.trim();
+  const descripcion = $("#voDescripcion").value.trim();
+  if(!nombre){
+    alert("Añade un nombre para la categoría de vuelo.");
+    return;
+  }
+
+  if(editingVoladoId){
+    const vo = volados.find(v=>v.id === editingVoladoId);
+    if(vo){
+      vo.nombre = nombre;
+      vo.descripcion = descripcion;
+    }else{
+      volados.push({ id: uid("vo"), nombre, descripcion });
+    }
+  }else{
+    volados.push({ id: uid("vo"), nombre, descripcion });
+  }
+  save();
+  closeVoladoModal();
+  renderCatalogs();
+  refreshVoladoSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  refreshSelectedAve();
+}
+function deleteVolado(id){
+  const vo = volados.find(v=>v.id === id);
+  if(!vo) return;
+  if(!confirm(`¿Eliminar categoría "${vo.nombre}"? Las aves quedarán sin categoría asignada.`)) return;
+  volados = volados.filter(v=>v.id !== id);
+  const fallback = volados[0]?.id || null;
+  aves.forEach(a=>{
+    if(a.voladoId === id) a.voladoId = fallback;
+  });
+  save();
+  if(editingVoladoId === id){
+    closeVoladoModal();
+  }
+  renderCatalogs();
+  refreshVoladoSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  refreshSelectedAve();
+}
+function refreshVoladoSelects(){
+  const select = $("#fVolado");
+  if(!select) return;
+  const current = select.value;
+  fillSelect(volados, select, "id", "nombre");
+  if(current && volados.some(v=>v.id === current)){
+    select.value = current;
+  }else if(volados[0]){
+    select.value = volados[0].id;
+  }else{
+    select.value = "";
+  }
+}
+
+/* =========================
+   Procedencias CRUD
+========================= */
+function openProcedenciaModal(procId=null){
+  editingProcedenciaId = procId || null;
+  $("#modalProcedenciaOverlay").classList.remove("hidden");
+  const title = $("#procModalTitle");
+  const saveBtn = $("#btnSaveProc");
+  const isEditing = Boolean(editingProcedenciaId);
+  title.textContent = isEditing ? "Editar procedencia" : "Nueva procedencia";
+  saveBtn.textContent = isEditing ? "Guardar cambios" : "Guardar";
+
+  if(isEditing){
+    const proc = procedencias.find(p=>p.id === editingProcedenciaId);
+    if(proc){
+      $("#procNombre").value = proc.nombre;
+      $("#procDescripcion").value = proc.descripcion || "";
+    }else{
+      editingProcedenciaId = null;
+      resetProcedenciaForm();
+    }
+  }else{
+    resetProcedenciaForm();
+  }
+}
+function closeProcedenciaModal(){
+  editingProcedenciaId = null;
+  $("#modalProcedenciaOverlay").classList.add("hidden");
+}
+function resetProcedenciaForm(){
+  $("#procNombre").value = "";
+  $("#procDescripcion").value = "";
+}
+function saveProcedenciaFromForm(){
+  const nombre = $("#procNombre").value.trim();
+  const descripcion = $("#procDescripcion").value.trim();
+  if(!nombre){
+    alert("Añade un nombre para la procedencia.");
+    return;
+  }
+
+  if(editingProcedenciaId){
+    const proc = procedencias.find(p=>p.id === editingProcedenciaId);
+    if(proc){
+      proc.nombre = nombre;
+      proc.descripcion = descripcion;
+    }else{
+      procedencias.push({ id: uid("pr"), nombre, descripcion });
+    }
+  }else{
+    procedencias.push({ id: uid("pr"), nombre, descripcion });
+  }
+  save();
+  closeProcedenciaModal();
+  renderCatalogs();
+  refreshProcedenciaSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  refreshSelectedAve();
+}
+function deleteProcedencia(id){
+  const proc = procedencias.find(p=>p.id === id);
+  if(!proc) return;
+  if(!confirm(`¿Eliminar procedencia "${proc.nombre}"? Las aves quedarán sin procedencia.`)) return;
+  procedencias = procedencias.filter(p=>p.id !== id);
+  aves.forEach(a=>{
+    if(a.procedenciaId === id) a.procedenciaId = null;
+  });
+  save();
+  if(editingProcedenciaId === id){
+    closeProcedenciaModal();
+  }
+  renderCatalogs();
+  refreshProcedenciaSelects();
+  renderAvesTable($("#searchAve").value);
+  renderLatest();
+  refreshSelectedAve();
+}
+function refreshProcedenciaSelects(){
+  const select = $("#fProcedencia");
+  if(!select) return;
+  const current = select.value;
+  fillSelect(procedencias, select, "id", "nombre");
+  if(current && procedencias.some(p=>p.id === current)){
+    select.value = current;
+  }else if(procedencias[0]){
+    select.value = procedencias[0].id;
+  }else{
+    select.value = "";
+  }
+}
+
+/* =========================
    Selectores parentesco
 ========================= */
 function populateKinSelectors(){
@@ -778,7 +1299,18 @@ function bindUI(){
 
   // Acciones topbar
   $("#btnNewAve").addEventListener("click", ()=> openModal());
-  $("#btnSeed").addEventListener("click", seed);
+  $("#btnNewProcedencia").addEventListener("click", ()=> openProcedenciaModal());
+  $("#btnNewPlumaje").addEventListener("click", ()=> openPlumajeModal());
+  $("#btnExportBackup").addEventListener("click", exportBackup);
+  $("#btnImportBackup").addEventListener("click", ()=>{
+    $("#backupFile").click();
+  });
+  $("#backupFile").addEventListener("change", (e)=>{
+    const file = e.target.files ? e.target.files[0] : null;
+    handleBackupFile(file);
+    e.target.value = "";
+  });
+  $("#btnNewVolado").addEventListener("click", ()=> openVoladoModal());
 
   // Aves
   $("#searchAve").addEventListener("input", (e)=> renderAvesTable(e.target.value));
@@ -824,6 +1356,44 @@ function bindUI(){
     if(e.target.id === "modalOverlay") closeModal();
   });
   $("#btnSaveAve").addEventListener("click", saveAveFromForm);
+  const imgFileInput = $("#fImagenFile");
+  const imgUrlInput = $("#fImagen");
+  const btnUploadImage = $("#btnUploadImage");
+  if(btnUploadImage && imgFileInput){
+    btnUploadImage.addEventListener("click", ()=> imgFileInput.click());
+    imgFileInput.addEventListener("change", (e)=>{
+      const file = e.target.files ? e.target.files[0] : null;
+      loadImageFile(file);
+      e.target.value = "";
+    });
+  }
+  if(imgUrlInput){
+    imgUrlInput.addEventListener("input", (e)=> updateImagePreview(e.target.value.trim()));
+  }
+
+  // Modal procedencia
+  $("#btnCloseProcModal").addEventListener("click", closeProcedenciaModal);
+  $("#btnCancelProc").addEventListener("click", closeProcedenciaModal);
+  $("#modalProcedenciaOverlay").addEventListener("click", (e)=>{
+    if(e.target.id === "modalProcedenciaOverlay") closeProcedenciaModal();
+  });
+  $("#btnSaveProc").addEventListener("click", saveProcedenciaFromForm);
+
+  // Modal plumaje
+  $("#btnClosePlModal").addEventListener("click", closePlumajeModal);
+  $("#btnCancelPl").addEventListener("click", closePlumajeModal);
+  $("#modalPlumajeOverlay").addEventListener("click", (e)=>{
+    if(e.target.id === "modalPlumajeOverlay") closePlumajeModal();
+  });
+  $("#btnSavePl").addEventListener("click", savePlumajeFromForm);
+
+  // Modal categorías de vuelo
+  $("#btnCloseVoModal").addEventListener("click", closeVoladoModal);
+  $("#btnCancelVo").addEventListener("click", closeVoladoModal);
+  $("#modalVoladoOverlay").addEventListener("click", (e)=>{
+    if(e.target.id === "modalVoladoOverlay") closeVoladoModal();
+  });
+  $("#btnSaveVo").addEventListener("click", saveVoladoFromForm);
 }
 
 /* =========================

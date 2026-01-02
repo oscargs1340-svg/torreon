@@ -218,6 +218,12 @@ body{
 }
 .pageTitle{ font-weight: 750; font-size: 20px; }
 .pageSubtitle{ color: var(--muted); font-size: 12px; margin-top: 3px; }
+.topbarRight{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap:wrap;
+}
 
 .btn{
   border: 1px solid rgba(10,132,255,.25);
@@ -228,6 +234,10 @@ body{
   cursor:pointer;
   box-shadow: var(--shadow2);
   transition: .15s ease;
+}
+.btn.sm{
+  padding: 6px 12px;
+  font-size: 13px;
 }
 .btn:hover{ transform: translateY(-1px); }
 .btn.ghost{
@@ -277,7 +287,28 @@ body{
   align-items:center;
   border-bottom: 1px solid var(--stroke);
 }
+.cardHeaderRight{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
 .cardTitle{ font-weight: 700; }
+.cardTitle.withIcon{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+.iconBadge{
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.8);
+  display:grid;
+  place-items:center;
+  font-size: 16px;
+  box-shadow: var(--shadow2);
+}
 .pill{
   font-size: 12px;
   color: var(--muted);
@@ -368,13 +399,19 @@ select, input[type="range"]{
   align-items:flex-start;
 }
 .avatar{
-  width: 58px; height: 58px;
-  border-radius: 18px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   border: 1px solid var(--stroke);
   background: rgba(255,255,255,.85);
   display:grid; place-items:center;
   font-size: 24px;
   box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+.avatar.hasImage{
+  background-size: cover;
+  background-position: center;
 }
 .h2{ font-size: 18px; font-weight: 750; }
 .muted{ color: var(--muted); font-size: 12px; margin-top: 2px; }
@@ -419,6 +456,12 @@ select, input[type="range"]{
 }
 .listItemTitle{ font-weight: 650; }
 .listItemSub{ margin-top: 4px; color: var(--muted); font-size: 12px; }
+.listActions{
+  margin-top: 10px;
+  display:flex;
+  gap: 8px;
+  flex-wrap:wrap;
+}
 
 .svgWrap{
   width: 100%;
@@ -483,6 +526,48 @@ label input, label select{
   background: rgba(255,255,255,.72);
   font-size: 14px;
   color: var(--text);
+}
+label .inputWithBtn{
+  display:flex;
+  gap: 8px;
+}
+label .inputWithBtn input{
+  flex:1;
+}
+label .hiddenFile,
+.hiddenFile{
+  display:none;
+}
+label .inputWithBtn button{
+  white-space:nowrap;
+}
+label .imagePreview,
+.imagePreview{
+  margin-top: 8px;
+  border-radius: 16px;
+  border: 1px dashed var(--stroke);
+  min-height: 140px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display:none;
+  padding:12px;
+  font-size:12px;
+  color: var(--muted);
+}
+.imagePreview.visible{ display:block; }
+label textarea{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.72);
+  font-size: 14px;
+  color: var(--text);
+  resize: vertical;
+  min-height: 100px;
+}
+.formGrid.single{
+  grid-template-columns: 1fr;
 }
 .modalFooter{
   display:flex;

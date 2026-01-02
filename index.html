@@ -47,6 +47,7 @@
         <button class="navItem" data-view="aves">🗂️ Aves</button>
         <button class="navItem" data-view="parentesco">🧬 Parentesco</button>
         <button class="navItem" data-view="plumajes">🎨 Plumajes</button>
+        <button class="navItem" data-view="volados">🪽 Vuelo</button>
         <button class="navItem" data-view="procedencias">📍 Procedencias</button>
       </nav>
 
@@ -62,11 +63,13 @@
               <div class="pageTitle" id="pageTitle">Dashboard</div>
               <div class="pageSubtitle" id="pageSubtitle">Resumen rápido del palomar</div>
             </div>
-            <div class="topbarRight">
-              <button class="btn ghost" id="btnSeed">Cargar ejemplo</button>
-              <button class="btn" id="btnNewAve">+ Nueva ave</button>
-            </div>
-          </header>
+        <div class="topbarRight">
+          <button class="btn ghost sm" id="btnImportBackup">Importar</button>
+          <button class="btn ghost sm" id="btnExportBackup">Exportar</button>
+          <input type="file" id="backupFile" accept="application/json" class="hiddenFile" />
+          <button class="btn" id="btnNewAve">+ Nueva ave</button>
+        </div>
+      </header>
 
           <!-- Content -->
           <section class="content">
@@ -202,10 +205,32 @@
           <div class="card">
             <div class="cardHeader">
               <div class="cardTitle">Plumajes</div>
-              <div class="pill">catálogo</div>
+              <div class="cardHeaderRight">
+                <div class="pill">catálogo</div>
+                <button class="btn ghost sm" id="btnNewPlumaje">+ Nuevo</button>
+              </div>
             </div>
             <div class="cardBody">
               <div class="list" id="plumajesList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOLADOS -->
+        <div class="view hidden" id="view-volados">
+          <div class="card">
+            <div class="cardHeader">
+              <div class="cardTitle withIcon">
+                <span class="iconBadge">🪽</span>
+                <span>Categorías de vuelo</span>
+              </div>
+              <div class="cardHeaderRight">
+                <div class="pill">catálogo</div>
+                <button class="btn ghost sm" id="btnNewVolado">+ Nueva</button>
+              </div>
+            </div>
+            <div class="cardBody">
+              <div class="list" id="voladosList"></div>
             </div>
           </div>
         </div>
@@ -215,7 +240,10 @@
           <div class="card">
             <div class="cardHeader">
               <div class="cardTitle">Procedencias</div>
-              <div class="pill">catálogo</div>
+              <div class="cardHeaderRight">
+                <div class="pill">catálogo</div>
+                <button class="btn ghost sm" id="btnNewProcedencia">+ Nueva</button>
+              </div>
             </div>
             <div class="cardBody">
               <div class="list" id="procedenciasList"></div>
@@ -261,18 +289,94 @@
             <select id="fPlumaje"></select>
           </label>
 
-          <label>Imagen (URL)<input id="fImagen" placeholder="https://..." /></label>
-          <label>Volado
-            <select id="fVolado">
-              <option value="false">No</option>
-              <option value="true">Sí</option>
-            </select>
+          <label>Imagen
+            <div class="inputWithBtn">
+              <input id="fImagen" placeholder="https://..." />
+              <button type="button" class="btn ghost sm" id="btnUploadImage">Galería</button>
+            </div>
+            <input type="file" id="fImagenFile" accept="image/*" class="hiddenFile" />
+          </label>
+          <div class="imagePreview" id="imagePreview">Sin imagen</div>
+          <label>Categoría de vuelo
+            <select id="fVolado"></select>
           </label>
         </div>
       </div>
       <div class="modalFooter">
         <button class="btn ghost" id="btnCancel">Cancelar</button>
         <button class="btn" id="btnSaveAve">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Procedencia -->
+  <div class="modalOverlay hidden" id="modalProcedenciaOverlay">
+    <div class="modal">
+      <div class="modalHeader">
+        <div class="cardTitle" id="procModalTitle">Nueva procedencia</div>
+        <button class="iconBtn" id="btnCloseProcModal">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="formGrid single">
+          <label>Nombre
+            <input id="procNombre" />
+          </label>
+          <label>Descripción
+            <textarea id="procDescripcion" rows="3"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn ghost" id="btnCancelProc">Cancelar</button>
+        <button class="btn" id="btnSaveProc">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Plumaje -->
+  <div class="modalOverlay hidden" id="modalPlumajeOverlay">
+    <div class="modal">
+      <div class="modalHeader">
+        <div class="cardTitle" id="plModalTitle">Nuevo plumaje</div>
+        <button class="iconBtn" id="btnClosePlModal">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="formGrid single">
+          <label>Nombre
+            <input id="plNombre" />
+          </label>
+          <label>Descripción
+            <textarea id="plDescripcion" rows="3"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn ghost" id="btnCancelPl">Cancelar</button>
+        <button class="btn" id="btnSavePl">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Categoría de Vuelo -->
+  <div class="modalOverlay hidden" id="modalVoladoOverlay">
+    <div class="modal">
+      <div class="modalHeader">
+        <div class="cardTitle" id="voModalTitle">Nueva categoría de vuelo</div>
+        <button class="iconBtn" id="btnCloseVoModal">✕</button>
+      </div>
+      <div class="modalBody">
+        <div class="formGrid single">
+          <label>Nombre
+            <input id="voNombre" />
+          </label>
+          <label>Descripción
+            <textarea id="voDescripcion" rows="3"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn ghost" id="btnCancelVo">Cancelar</button>
+        <button class="btn" id="btnSaveVo">Guardar</button>
       </div>
     </div>
   </div>
